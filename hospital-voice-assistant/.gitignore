@@ -1,0 +1,29 @@
+# Secrets
+.env
+service_account.json
+credentials.json
+token.json
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node (not used by this project)
+node_modules/
+
+# Binaries — install ngrok separately
+ngrok
+ngrok.exe
+
+# Runtime data — contains patient names & symptoms
+data/*.xlsx
+logs/*
+!logs/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

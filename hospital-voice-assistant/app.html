@@ -1,0 +1,2782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCall — Hospital Appointment Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:        #06172e;
+  --navy-mid:    #0d2645;
+  --navy-light:  #163760;
+  --accent:      #1a6cf5;
+  --accent-glow: rgba(26,108,245,0.2);
+  --accent-soft: #e0eaff;
+  --teal:        #0096c7;
+  --teal-soft:   #caf0f8;
+  --amber:       #e9930a;
+  --amber-soft:  #fff3cd;
+  --red:         #e53e3e;
+  --red-soft:    #ffe0e0;
+  --green:       #0a9e6c;
+  --green-soft:  #d0f5e8;
+  --purple:      #7c3aed;
+  --purple-soft: #ede9fe;
+  --pink:        #e91e8c;
+  --pink-soft:   #fce4f3;
+  --bg:          #f2f6fc;
+  --bg-card:     #ffffff;
+  --bg-sidebar:  #06172e;
+  --text:        #0d1f35;
+  --text-muted:  #5a7089;
+  --text-light:  #8fa8c0;
+  --border:      #dde7f0;
+  --border-strong:#b8cfe0;
+  --shadow-sm:   0 1px 4px rgba(6,23,46,0.07);
+  --shadow:      0 4px 20px rgba(6,23,46,0.1);
+  --shadow-lg:   0 12px 40px rgba(6,23,46,0.15);
+  --shadow-xl:   0 24px 60px rgba(6,23,46,0.2);
+  --r-sm:  8px;
+  --r:     14px;
+  --r-lg:  18px;
+  --r-xl:  24px;
+  --r-2xl: 32px;
+  --sidebar-w: 268px;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+/* ─── Sidebar ─────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  background-image: radial-gradient(ellipse at 20% 20%, rgba(26,108,245,0.12) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(0,150,199,0.08) 0%, transparent 60%);
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 1px; height: 100%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent);
+  pointer-events: none;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #1a6cf5 0%, #0096c7 100%);
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 4px 16px rgba(26,108,245,0.45);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.logo-icon::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+}
+
+.logo-text {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.2px;
+  line-height: 1.1;
+}
+
+.logo-sub {
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Clock */
+.sidebar-clock {
+  margin: 14px 18px 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r);
+  padding: 13px 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-clock::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+.clock-day {
+  font-size: 9.5px; color: var(--teal);
+  font-weight: 700; letter-spacing: 1.8px;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+
+.clock-time {
+  font-family: var(--font-serif);
+  font-size: 28px; color: #fff;
+  letter-spacing: -1px; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-time .ampm {
+  font-family: var(--font-body);
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  margin-left: 5px; font-weight: 500;
+  letter-spacing: 0;
+}
+
+.clock-date {
+  font-size: 10.5px; color: rgba(255,255,255,0.4);
+  font-weight: 400; margin-top: 4px;
+}
+
+/* Nav */
+.sidebar-nav {
+  padding: 14px 12px;
+  flex: 1;
+}
+
+.nav-section-label {
+  font-size: 9.5px; letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22); font-weight: 600;
+  padding: 0 10px;
+  margin-bottom: 5px; margin-top: 20px;
+}
+
+.nav-section-label:first-child { margin-top: 4px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.45);
+  font-size: 13.5px; font-weight: 400;
+  cursor: pointer; transition: all 0.17s ease;
+  text-decoration: none; margin-bottom: 1px;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.82);
+  transform: translateX(2px);
+}
+
+.nav-item.active {
+  background: rgba(26,108,245,0.2);
+  color: #93c5fd; font-weight: 500;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 22%; height: 56%;
+  width: 3px; background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent); color: white;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 100px;
+  min-width: 20px; text-align: center;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 14px 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.status-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10,158,108,0.1);
+  border: 1px solid rgba(10,158,108,0.22);
+  border-radius: 100px; padding: 8px 14px;
+  font-size: 12px; color: rgba(255,255,255,0.55);
+}
+
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(10,158,108,0.25);
+  animation: pulse-dot 2.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(10,158,108,0.25); }
+  50%       { box-shadow: 0 0 0 6px rgba(10,158,108,0.08); }
+}
+
+/* ─── Hamburger (mobile) ──────────────────────────────────────── */
+.hamburger {
+  display: none;
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  width: 40px; height: 40px;
+  background: white; border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer; box-shadow: var(--shadow);
+  align-items: center; justify-content: center; flex-direction: column; gap: 5px;
+}
+
+.hamburger span {
+  display: block; width: 18px; height: 2px;
+  background: var(--text); border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+/* ─── Main ────────────────────────────────────────────────────── */
+.main {
+  flex: 1; padding: 28px 32px;
+  overflow: auto; min-width: 0;
+  position: relative;
+}
+
+/* Hero gradient top */
+.main::before {
+  content: '';
+  position: fixed;
+  top: 0; left: var(--sidebar-w); right: 0;
+  height: 260px;
+  background: linear-gradient(180deg, rgba(218,231,248,0.5) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── Top Bar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 26px; gap: 16px;
+  position: relative; z-index: 1;
+}
+
+.page-heading-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 30px; font-weight: 400;
+  color: var(--navy); letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.page-subtitle {
+  font-size: 13px; color: var(--text-muted);
+  margin-top: 4px; font-weight: 400;
+}
+
+.topbar-actions {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding-top: 4px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; font-size: 13.5px; font-weight: 500;
+  font-family: var(--font-body);
+  border-radius: 100px; cursor: pointer;
+  transition: all 0.18s ease; border: none;
+  text-decoration: none; letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a6cf5, #0d5ee0);
+  color: white;
+  box-shadow: 0 4px 14px rgba(26,108,245,0.38);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(26,108,245,0.48);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  background: white; color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-ghost:hover {
+  color: var(--text); border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.btn-danger {
+  background: var(--red-soft); color: var(--red);
+  border: 1.5px solid #fca5a5;
+}
+
+.btn-danger:hover { background: #fecaca; }
+
+.btn-teal {
+  background: linear-gradient(135deg, #0096c7, #0077a8);
+  color: white; box-shadow: 0 4px 14px rgba(0,150,199,0.32);
+}
+
+.btn-teal:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,150,199,0.42);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #0a9e6c, #07835a);
+  color: white; box-shadow: 0 4px 14px rgba(10,158,108,0.32);
+}
+
+.btn-success:hover { transform: translateY(-1px); }
+
+/* ─── Info Banner ─────────────────────────────────────────────── */
+.info-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: var(--r); padding: 12px 18px;
+  margin-bottom: 22px; font-size: 13px; color: #92400e;
+  position: relative; z-index: 1;
+}
+
+/* ─── Quick Stats Row ─────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 24px;
+  position: relative; z-index: 1;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+  transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
+  cursor: pointer; user-select: none;
+}
+
+.stat-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+.stat-card.blue:hover  { border-color: #93c5fd; }
+.stat-card.teal:hover  { border-color: #67e8f9; }
+.stat-card.amber:hover { border-color: #fcd34d; }
+.stat-card.green:hover { border-color: #6ee7b7; }
+.stat-card:active { transform: translateY(-1px); }
+
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+
+.stat-card.blue::before  { background: linear-gradient(90deg, #1a6cf5, #60a5fa); }
+.stat-card.teal::before  { background: linear-gradient(90deg, #0096c7, #38bdf8); }
+.stat-card.amber::before { background: linear-gradient(90deg, #e9930a, #fbbf24); }
+.stat-card.green::before { background: linear-gradient(90deg, #0a9e6c, #34d399); }
+
+.stat-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 13px;
+}
+
+.stat-card.blue  .stat-icon { background: var(--accent-soft); }
+.stat-card.teal  .stat-icon { background: var(--teal-soft); }
+.stat-card.amber .stat-icon { background: var(--amber-soft); }
+.stat-card.green .stat-icon { background: var(--green-soft); }
+
+.stat-label {
+  font-size: 10.5px; color: var(--text-muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: var(--font-serif);
+  font-size: 32px; color: var(--navy); line-height: 1; margin-bottom: 5px;
+}
+
+.stat-change {
+  font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; gap: 3px;
+}
+
+.stat-change.up      { color: var(--green); }
+.stat-change.neutral { color: var(--text-muted); }
+
+.stat-click-hint {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.6px; margin-top: 10px; opacity: 0;
+  transition: opacity 0.2s; display: flex; align-items: center; gap: 4px;
+}
+
+.stat-card.blue  .stat-click-hint { color: var(--accent); }
+.stat-card.teal  .stat-click-hint { color: var(--teal); }
+.stat-card.amber .stat-click-hint { color: var(--amber); }
+.stat-card.green .stat-click-hint { color: var(--green); }
+.stat-card:hover .stat-click-hint { opacity: 1; }
+
+/* ─── Charts Row ──────────────────────────────────────────────── */
+.charts-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+  position: relative; z-index: 1;
+}
+
+.chart-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-card-header {
+  padding: 16px 20px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-card-title {
+  font-size: 14px; font-weight: 600; color: var(--navy);
+}
+
+.chart-card-sub {
+  font-size: 11.5px; color: var(--text-muted); margin-top: 2px;
+}
+
+.chart-body { padding: 16px 20px 18px; }
+
+/* Mini bar chart */
+.mini-bar-chart {
+  display: flex; align-items: flex-end;
+  gap: 5px; height: 80px;
+  margin-bottom: 10px;
+}
+
+.bar-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 100%; border-radius: 4px 4px 0 0;
+  min-height: 4px; transition: height 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+
+.bar:hover { filter: brightness(1.1); }
+
+.bar-label {
+  font-size: 9px; color: var(--text-light);
+  font-weight: 600; text-align: center;
+}
+
+.bar-val {
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+}
+
+/* Donut chart */
+.donut-wrap {
+  display: flex; align-items: center; gap: 18px;
+}
+
+.donut-canvas-wrap {
+  position: relative; flex-shrink: 0;
+}
+
+.donut-canvas-wrap svg { display: block; }
+
+.donut-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-center-num {
+  font-family: var(--font-serif);
+  font-size: 22px; color: var(--navy); line-height: 1;
+}
+
+.donut-center-lbl {
+  font-size: 9px; color: var(--text-light);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.donut-legend-item {
+  display: flex; align-items: center; gap: 7px;
+}
+
+.donut-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.donut-legend-text { font-size: 12px; color: var(--text); flex: 1; }
+.donut-legend-val  { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+
+/* ─── Card ────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden;
+  position: relative; z-index: 1;
+}
+
+.card-header {
+  padding: 18px 22px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); gap: 12px;
+}
+
+.card-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+.card-meta  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── Table ───────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+thead th {
+  background: #f8fafc; padding: 10px 18px;
+  text-align: left; font-size: 10.5px; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.7px; border-bottom: 1px solid var(--border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+
+thead th:hover { color: var(--text); }
+
+thead th.sortable::after {
+  content: ' ⇅'; font-size: 9px; opacity: 0.4;
+}
+
+thead th.sort-asc::after  { content: ' ↑'; opacity: 0.8; color: var(--accent); }
+thead th.sort-desc::after { content: ' ↓'; opacity: 0.8; color: var(--accent); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s; cursor: pointer;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f7fbff; }
+
+td {
+  padding: 12px 18px; color: var(--text); vertical-align: middle;
+}
+
+td.muted { color: var(--text-muted); font-size: 12px; }
+
+.patient-cell { display: flex; align-items: center; gap: 11px; }
+
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+
+.avatar-blue   { background: var(--accent-soft); color: #1d4ed8; }
+.avatar-teal   { background: var(--teal-soft);   color: #0077a8; }
+.avatar-amber  { background: var(--amber-soft);  color: #b45309; }
+.avatar-green  { background: var(--green-soft);  color: #047857; }
+.avatar-purple { background: var(--purple-soft); color: #6d28d9; }
+.avatar-pink   { background: var(--pink-soft);   color: #9d174d; }
+
+.patient-name { font-weight: 600; font-size: 13px; }
+.patient-sid  { font-size: 11px; color: var(--text-light); }
+
+/* ─── Badge ───────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+
+.badge-blue   { background: var(--accent-soft); color: #1d4ed8; }
+.badge-teal   { background: var(--teal-soft);   color: #0077a8; }
+.badge-amber  { background: var(--amber-soft);  color: #92400e; }
+.badge-green  { background: var(--green-soft);  color: #047857; }
+.badge-gray   { background: #f1f5f9; color: var(--text-muted); }
+.badge-red    { background: var(--red-soft);    color: var(--red); }
+.badge-purple { background: var(--purple-soft); color: #6d28d9; }
+
+/* ─── Table controls ─────────────────────────────────────────── */
+.table-controls {
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 10px;
+  background: #fafbfc; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative; flex: 1; min-width: 200px; max-width: 320px;
+}
+
+.search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-light); font-size: 14px; pointer-events: none;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+select {
+  font-family: var(--font-body);
+  font-size: 13px; color: var(--text);
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 100px;
+  transition: border-color 0.18s, box-shadow 0.18s; outline: none;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="email"]:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(26,108,245,0.1);
+}
+
+.search-input { width: 100%; padding: 8px 12px 8px 34px; }
+
+select {
+  padding: 8px 30px 8px 14px;
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238fa8c0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  background-color: white;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 2px; padding: 3px;
+  background: #edf1f7; border-radius: 100px;
+}
+
+.tab-btn {
+  padding: 5px 14px; font-size: 12.5px; font-weight: 600;
+  font-family: var(--font-body); border: none; background: none;
+  border-radius: 100px; cursor: pointer;
+  color: var(--text-muted); transition: all 0.17s;
+}
+
+.tab-btn.active { background: white; color: var(--navy); box-shadow: var(--shadow-sm); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fade-in 0.2s ease; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Table footer / pagination ──────────────────────────────── */
+.table-footer {
+  padding: 12px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border); background: #fafbfc;
+}
+
+.pagination { display: flex; gap: 4px; }
+
+.page-btn {
+  width: 30px; height: 30px; border-radius: 100px;
+  border: 1.5px solid var(--border); background: white;
+  font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-family: var(--font-body);
+  transition: all 0.15s; font-weight: 600;
+}
+
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ─── Status indicator (table rows) ─────────────────────────── */
+.status-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.status-indicator.completed { background: var(--green-soft); color: var(--green); }
+.status-indicator.pending   { background: var(--amber-soft); color: var(--amber); }
+.status-indicator.cancelled { background: var(--red-soft);   color: var(--red); }
+
+/* ─── Doctor cards ────────────────────────────────────────────── */
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px; padding: 20px;
+}
+
+.doctor-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg); padding: 20px;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  cursor: pointer; position: relative; overflow: hidden;
+  background: white;
+}
+
+.doctor-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 60%, rgba(26,108,245,0.04));
+  pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+
+.doctor-card:hover {
+  box-shadow: var(--shadow);
+  border-color: #93c5fd;
+  transform: translateY(-3px);
+}
+
+.doctor-card:hover::after { opacity: 1; }
+
+.doctor-card-click-hint {
+  font-size: 10px; color: var(--accent); font-weight: 600;
+  letter-spacing: 0.5px; margin-top: 10px;
+  opacity: 0; transition: opacity 0.2s; text-transform: uppercase;
+}
+
+.doctor-card:hover .doctor-card-click-hint { opacity: 1; }
+
+.doctor-avatar {
+  width: 50px; height: 50px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.doctor-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+.doctor-spec { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+/* Availability bar on doctor card */
+.availability-bar {
+  margin-top: 12px;
+  height: 3px; background: #edf1f7; border-radius: 100px; overflow: hidden;
+}
+
+.availability-fill {
+  height: 100%; border-radius: 100px;
+  transition: width 0.5s ease;
+}
+
+.avail-label {
+  display: flex; justify-content: space-between;
+  margin-top: 5px; font-size: 10px; color: var(--text-light);
+}
+
+/* ─── Call log ────────────────────────────────────────────────── */
+.call-log-item {
+  padding: 13px 22px; display: flex; align-items: flex-start; gap: 13px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s; cursor: pointer;
+}
+
+.call-log-item:last-child { border-bottom: none; }
+.call-log-item:hover { background: #f7fbff; }
+
+.call-dot {
+  width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+}
+
+.call-dot.completed { background: var(--green); box-shadow: 0 0 0 3px rgba(10,158,108,0.15); }
+.call-dot.partial   { background: var(--amber); box-shadow: 0 0 0 3px rgba(233,147,10,0.15); }
+.call-dot.failed    { background: var(--red);   box-shadow: 0 0 0 3px rgba(229,62,62,0.15); }
+
+.call-info { flex: 1; min-width: 0; }
+.call-name   { font-size: 13px; font-weight: 600; }
+.call-detail { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.call-time   { font-size: 11px; color: var(--text-light); white-space: nowrap; }
+
+/* Call log filter row */
+.call-filter-row {
+  padding: 12px 22px; display: flex; gap: 8px; align-items: center;
+  border-bottom: 1px solid var(--border); background: #fafbfc;
+}
+
+.call-filter-btn {
+  padding: 4px 12px; font-size: 12px; font-weight: 600;
+  border-radius: 100px; cursor: pointer; border: 1.5px solid var(--border);
+  background: white; color: var(--text-muted); font-family: var(--font-body);
+  transition: all 0.15s;
+}
+
+.call-filter-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+.call-filter-btn:hover:not(.active) { border-color: var(--border-strong); color: var(--text); }
+
+/* ─── Analytics tab ───────────────────────────────────────────── */
+.analytics-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.analytics-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+/* Trend chart (7-day sparkline) */
+.trend-chart { height: 120px; position: relative; overflow: hidden; }
+.trend-svg { width: 100%; height: 100%; }
+
+/* Top diseases */
+.disease-list { display: flex; flex-direction: column; gap: 10px; }
+
+.disease-item {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.disease-label { font-size: 12.5px; font-weight: 500; flex: 1; }
+.disease-count { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 28px; text-align: right; }
+
+.disease-bar-track {
+  flex: 2; height: 6px; background: #edf1f7;
+  border-radius: 100px; overflow: hidden;
+}
+
+.disease-bar-fill {
+  height: 100%; border-radius: 100px; transition: width 0.5s ease;
+}
+
+/* Peak hours */
+.peak-hours-chart {
+  display: flex; align-items: flex-end; gap: 4px; height: 80px;
+}
+
+.peak-bar-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; height: 100%; justify-content: flex-end;
+}
+
+.peak-bar {
+  width: 100%; border-radius: 3px 3px 0 0; min-height: 3px;
+  transition: height 0.5s ease; background: linear-gradient(180deg, #1a6cf5, #60a5fa);
+  cursor: pointer; position: relative;
+}
+
+.peak-bar:hover { filter: brightness(1.15); }
+
+.peak-bar-tooltip {
+  position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: white; font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 5px; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 0.15s;
+}
+
+.peak-bar:hover .peak-bar-tooltip { opacity: 1; }
+
+.peak-lbl {
+  font-size: 8.5px; color: var(--text-light);
+  font-weight: 600; text-align: center;
+}
+
+/* ─── Empty state ─────────────────────────────────────────────── */
+.empty-state { padding: 48px 20px; text-align: center; color: var(--text-muted); }
+.empty-state-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 13.5px; }
+
+/* ─── Modal ───────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(6,23,46,0.52); z-index: 1000;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: white; border-radius: var(--r-xl);
+  box-shadow: var(--shadow-xl);
+  width: 580px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.93) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  padding: 24px 26px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 22px; color: var(--navy); line-height: 1.1;
+}
+
+.modal-subtitle { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+.modal-close {
+  width: 30px; height: 30px; border-radius: 100px;
+  background: #f1f5f9; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 14px;
+  transition: all 0.15s; flex-shrink: 0; margin-top: 2px;
+}
+
+.modal-close:hover { background: var(--red-soft); color: var(--red); }
+
+.modal-body { padding: 22px 26px; }
+
+/* ─── Form ────────────────────────────────────────────────────── */
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+
+.form-row.single { grid-template-columns: 1fr; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+label.form-label {
+  font-size: 11.5px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+
+input[type="text"].form-input,
+input[type="date"].form-input,
+input[type="time"].form-input,
+input[type="email"].form-input,
+select.form-input,
+textarea.form-input {
+  padding: 10px 14px; border-radius: var(--r);
+  font-size: 13.5px; width: 100%;
+}
+
+textarea.form-input {
+  border-radius: var(--r); resize: vertical;
+  min-height: 72px; line-height: 1.5;
+  font-family: var(--font-body);
+  border: 1.5px solid var(--border); outline: none;
+}
+
+textarea.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(26,108,245,0.1);
+}
+
+.form-hint { font-size: 11px; color: var(--text-light); }
+
+/* Required field indicator */
+label.form-label.req::after {
+  content: ' *'; color: var(--accent); opacity: 0.7;
+}
+
+.modal-footer {
+  padding: 16px 26px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end;
+  background: #fafbfc;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+}
+
+/* ─── Detail grid ─────────────────────────────────────────────── */
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.detail-label {
+  font-size: 10.5px; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.6px; margin-bottom: 4px;
+}
+
+.detail-value { font-size: 14px; color: var(--text); font-weight: 500; }
+
+.detail-field {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px 14px;
+}
+
+/* ─── Stat modal ─────────────────────────────────────────────── */
+.stat-modal-list { display: flex; flex-direction: column; }
+
+.stat-modal-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.stat-modal-item:last-child { border-bottom: none; }
+
+.stat-modal-item:hover {
+  background: #f7fbff; border-radius: var(--r-sm);
+  padding-left: 8px; padding-right: 8px;
+}
+
+.stat-modal-item-info { flex: 1; min-width: 0; }
+.stat-modal-item-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.stat-modal-item-sub  { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.stat-modal-item-right { font-size: 11.5px; color: var(--text-light); text-align: right; white-space: nowrap; }
+.stat-modal-empty { text-align: center; padding: 32px 20px; color: var(--text-muted); }
+.stat-modal-empty .empty-state-icon { font-size: 30px; opacity: 0.25; margin-bottom: 10px; }
+.stat-modal-empty p { font-size: 13px; }
+
+.stat-modal-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 20px;
+  padding-bottom: 18px; border-bottom: 1px solid var(--border);
+}
+
+.stat-modal-mini {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px; text-align: center;
+}
+
+.stat-modal-mini .v {
+  font-family: var(--font-serif);
+  font-size: 24px; color: var(--navy); line-height: 1;
+}
+
+.stat-modal-mini .l {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted); margin-top: 4px;
+}
+
+/* ─── Doctor modal ──────────────────────────────────────────── */
+.doctor-modal-header {
+  display: flex; align-items: center; gap: 18px;
+  margin-bottom: 20px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.doctor-modal-avatar {
+  width: 64px; height: 64px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; flex-shrink: 0; box-shadow: var(--shadow);
+}
+
+.doctor-modal-name {
+  font-family: var(--font-serif);
+  font-size: 22px; color: var(--navy);
+}
+
+.doctor-modal-spec { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+.doctor-stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 22px;
+}
+
+.doctor-stat-mini {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px; text-align: center;
+}
+
+.doctor-stat-mini .val {
+  font-family: var(--font-serif);
+  font-size: 26px; color: var(--navy); line-height: 1;
+}
+
+.doctor-stat-mini .lbl {
+  font-size: 10.5px; color: var(--text-muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+
+.doctor-patients-section h4 {
+  font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+}
+
+.doctor-patient-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+
+.doctor-patient-item:last-child { border-bottom: none; }
+
+.dpi-info { flex: 1; min-width: 0; }
+.dpi-name   { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.dpi-detail { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.dpi-time   { font-size: 11px; color: var(--text-light); white-space: nowrap; text-align: right; }
+
+/* ─── Toast ───────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 9999;
+}
+
+.toast {
+  padding: 11px 18px; border-radius: var(--r);
+  font-size: 13px; font-weight: 500; font-family: var(--font-body);
+  background: var(--navy); color: white;
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; align-items: center; gap: 8px;
+  max-width: 360px; min-width: 220px;
+}
+
+.toast.success { background: #0a4d35; border-left: 3px solid var(--green); }
+.toast.error   { background: #5c1a1a; border-left: 3px solid var(--red); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ─── Spinner ─────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-row td { text-align: center; padding: 32px; color: var(--text-muted); }
+
+/* ─── Search highlight ───────────────────────────────────────── */
+.highlight { background: #fef08a; border-radius: 2px; padding: 0 1px; }
+
+/* ─── Notification dot ─────────────────────────────────────── */
+.notif-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red); position: absolute;
+  top: 6px; right: 6px;
+  border: 2px solid white;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .charts-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .analytics-grid { grid-template-columns: 1fr; }
+  .analytics-grid .full-width { grid-column: 1; }
+}
+
+@media (max-width: 900px) {
+  .main { padding: 20px 20px; }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; left: -100%; transition: left 0.3s ease; z-index: 150;
+  }
+
+  .sidebar.open { left: 0; }
+  .sidebar-overlay.open { display: block; }
+  .hamburger { display: flex; }
+
+  .main {
+    padding: 60px 16px 16px;
+  }
+
+  .main::before { left: 0; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .charts-row { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .topbar { flex-wrap: wrap; }
+  .topbar-actions { width: 100%; justify-content: flex-end; }
+  .doctor-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .table-controls { flex-wrap: wrap; }
+  .search-wrap { max-width: 100%; width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .doctor-stats-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Print styles ─────────────────────────────────────────────── */
+@media print {
+  .sidebar, .topbar-actions, .table-controls .btn,
+  .modal-overlay, .toast-container, .hamburger { display: none !important; }
+  .main { padding: 0; }
+  body { background: white; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hamburger (mobile) -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ── Sidebar ─────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🏥</div>
+      <div>
+        <div class="logo-text">MediCall</div>
+        <div class="logo-sub">Hospital System</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-clock">
+    <div class="clock-day" id="clock-day">SATURDAY</div>
+    <div class="clock-time" id="clock-time">12:00<span class="ampm">AM</span></div>
+    <div class="clock-date" id="clock-date">30 May 2026 · IST</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item active" onclick="showTab('appointments', event)">
+      <span class="nav-icon">📋</span>
+      Appointments
+      <span class="nav-badge" id="sidebar-count">0</span>
+    </a>
+    <a class="nav-item" onclick="showTab('doctors', event)">
+      <span class="nav-icon">👨‍⚕️</span>
+      Doctors
+    </a>
+    <a class="nav-item" onclick="showTab('calls', event)">
+      <span class="nav-icon">📞</span>
+      Call Logs
+    </a>
+    <a class="nav-item" onclick="showTab('analytics', event)">
+      <span class="nav-icon">📊</span>
+      Analytics
+    </a>
+
+    <div class="nav-section-label">Actions</div>
+    <a class="nav-item" onclick="openAddModal()">
+      <span class="nav-icon">➕</span>
+      Add Appointment
+    </a>
+    <a class="nav-item" onclick="exportCSV()">
+      <span class="nav-icon">📥</span>
+      Export CSV
+    </a>
+    <a class="nav-item" onclick="printTable()">
+      <span class="nav-icon">🖨️</span>
+      Print / PDF
+    </a>
+    <a class="nav-item" onclick="refreshData()">
+      <span class="nav-icon">🔄</span>
+      Refresh Data
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span>Twilio Active · EN-IN</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="page-heading-wrap">
+      <h1 class="page-title" id="page-heading">Appointments</h1>
+      <p class="page-subtitle" id="page-subtitle">All patient bookings from Twilio voice calls</p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="refreshData()" title="Refresh">🔄 Refresh</button>
+      <button class="btn btn-ghost" onclick="exportCSV()" title="Download CSV">📥 Export</button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Appointment</button>
+    </div>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="info-banner" id="info-banner" style="display:none">
+    <span>ℹ️</span>
+    <span id="info-banner-text" style="flex:1"></span>
+    <button onclick="refreshData()" style="padding:5px 14px;font-size:12px;border:1px solid #fde68a;border-radius:100px;background:white;color:#92400e;cursor:pointer;white-space:nowrap;font-family:inherit;font-weight:600">🔄 Retry</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-section">
+    <div class="stat-card blue" onclick="openStatModal('all')">
+      <div class="stat-icon">📋</div>
+      <div class="stat-label">Total Appointments</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-change neutral">All time</div>
+      <div class="stat-click-hint">View all →</div>
+    </div>
+    <div class="stat-card teal" onclick="openStatModal('today')">
+      <div class="stat-icon">📞</div>
+      <div class="stat-label">Today's Calls</div>
+      <div class="stat-value" id="stat-today">—</div>
+      <div class="stat-change up">↑ Active</div>
+      <div class="stat-click-hint">View today →</div>
+    </div>
+    <div class="stat-card amber" onclick="openStatModal('doctors')">
+      <div class="stat-icon">👨‍⚕️</div>
+      <div class="stat-label">Unique Doctors</div>
+      <div class="stat-value" id="stat-doctors">—</div>
+      <div class="stat-change neutral">Assigned</div>
+      <div class="stat-click-hint">View breakdown →</div>
+    </div>
+    <div class="stat-card green" onclick="openStatModal('week')">
+      <div class="stat-icon">📅</div>
+      <div class="stat-label">This Week</div>
+      <div class="stat-value" id="stat-week">—</div>
+      <div class="stat-change neutral">Last 7 days</div>
+      <div class="stat-click-hint">View this week →</div>
+    </div>
+  </div>
+
+  <!-- Charts Row (visible on Appointments tab by default) -->
+  <div class="charts-row" id="charts-row">
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <div>
+          <div class="chart-card-title">7-Day Appointment Trend</div>
+          <div class="chart-card-sub">Daily bookings this week</div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="trend-chart" id="trend-chart-wrap">
+          <svg class="trend-svg" id="trend-svg" viewBox="0 0 400 100" preserveAspectRatio="none"></svg>
+        </div>
+        <div id="trend-labels" style="display:flex;justify-content:space-between;margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <div>
+          <div class="chart-card-title">Doctor Workload</div>
+          <div class="chart-card-sub">Appointments per doctor</div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="donut-wrap" id="donut-wrap">
+          <div class="donut-canvas-wrap">
+            <svg id="donut-svg" width="90" height="90" viewBox="0 0 90 90"></svg>
+            <div class="donut-center">
+              <div class="donut-center-num" id="donut-total">0</div>
+              <div class="donut-center-lbl">Total</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── APPOINTMENTS TAB ──────────────────────────────────────── -->
+  <div class="tab-content active" id="tab-appointments">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Patient Appointments</div>
+          <div class="card-meta" id="table-meta">Loading…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="setFilter('all',this)">All</button>
+            <button class="tab-btn" onclick="setFilter('today',this)">Today</button>
+            <button class="tab-btn" onclick="setFilter('week',this)">Week</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input"
+            placeholder="Search patient, doctor, symptoms…" oninput="onSearchInput()">
+        </div>
+        <select id="filter-doctor" onchange="renderTable()">
+          <option value="">All Doctors</option>
+        </select>
+        <select id="filter-status" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option value="completed">Completed</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px;border-radius:100px" onclick="clearFilters()">✕ Clear</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable('serial')">#</th>
+              <th class="sortable" onclick="sortTable('name')">Patient</th>
+              <th>Symptoms</th>
+              <th class="sortable" onclick="sortTable('doctor')">Doctor</th>
+              <th>Status</th>
+              <th class="sortable" onclick="sortTable('preferred_time')">Appointment Time</th>
+              <th class="sortable" onclick="sortTable('recorded_at')">Recorded</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appointments-tbody">
+            <tr class="loading-row">
+              <td colspan="8"><span class="spinner"></span> Loading appointments…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span style="font-size:12px;color:var(--text-muted)" id="table-count">—</span>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DOCTORS TAB ────────────────────────────────────────────── -->
+  <div class="tab-content" id="tab-doctors">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Doctor Directory</div>
+          <div class="card-meta">Click any card to see full profile & patient history</div>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="filterDoctors('all', this)">All</button>
+          <button class="tab-btn" onclick="filterDoctors('active', this)">Active Today</button>
+        </div>
+      </div>
+      <div class="doctor-grid" id="doctor-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── CALLS TAB ──────────────────────────────────────────────── -->
+  <div class="tab-content" id="tab-calls">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Call Logs</div>
+          <div class="card-meta">Recent Twilio voice call sessions</div>
+        </div>
+        <span style="font-size:12px;color:var(--text-muted)" id="call-count"></span>
+      </div>
+      <div class="call-filter-row">
+        <button class="call-filter-btn active" onclick="setCallFilter('all', this)">All</button>
+        <button class="call-filter-btn" onclick="setCallFilter('completed', this)">✅ Completed</button>
+        <button class="call-filter-btn" onclick="setCallFilter('partial', this)">⚠️ Partial</button>
+        <button class="call-filter-btn" onclick="setCallFilter('failed', this)">❌ Incomplete</button>
+      </div>
+      <div id="call-log-list"></div>
+    </div>
+  </div>
+
+  <!-- ── ANALYTICS TAB ─────────────────────────────────────────── -->
+  <div class="tab-content" id="tab-analytics">
+    <div class="analytics-grid">
+
+      <!-- Top Diseases -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Top Symptoms / Diseases</div>
+            <div class="card-meta">Most frequent health concerns</div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="disease-list" id="disease-list"></div>
+        </div>
+      </div>
+
+      <!-- Peak Hours -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Peak Booking Hours</div>
+            <div class="card-meta">When patients call most</div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="peak-hours-chart" id="peak-hours-chart"></div>
+          <div id="peak-hours-labels" style="display:flex;justify-content:space-between;margin-top:6px"></div>
+        </div>
+      </div>
+
+      <!-- Doctor Leaderboard -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Doctor Performance Leaderboard</div>
+            <div class="card-meta">Total appointments per doctor — click to view profile</div>
+          </div>
+        </div>
+        <div style="padding:16px 20px" id="leaderboard-list"></div>
+      </div>
+
+      <!-- Monthly Trend -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Weekly Appointment Volume</div>
+            <div class="card-meta">7-day activity breakdown</div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="mini-bar-chart" id="weekly-bar-chart"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Add Appointment Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Add Appointment</div>
+        <div class="modal-subtitle" id="modal-subtitle">Manually enter patient details</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label req">Patient Name</label>
+          <input type="text" class="form-input" id="f-name" placeholder="e.g. Rajesh Kumar">
+        </div>
+        <div class="form-group">
+          <label class="form-label req">Doctor Preference</label>
+          <select class="form-input" id="f-doctor">
+            <option value="">Select Doctor</option>
+            <option>Dr. Sharma – General Physician</option>
+            <option>Dr. Mehta – General Physician</option>
+            <option>Dr. Verma – Cardiologist</option>
+            <option>Dr. Gupta – Cardiologist</option>
+            <option>Dr. Khan – Dermatologist</option>
+            <option>Dr. Roy – Dermatologist</option>
+            <option>Dr. Kapoor – Orthopedic Surgeon</option>
+            <option>Dr. Singh – Ophthalmologist</option>
+            <option>Dr. Bose – ENT Specialist</option>
+            <option>Dr. Nair – Neurologist</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label req">Disease / Symptoms</label>
+          <textarea class="form-input" id="f-disease" placeholder="Describe the patient's symptoms or health concern…"></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label req">Appointment Date</label>
+          <input type="date" class="form-input" id="f-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label req">Preferred Time</label>
+          <select class="form-input" id="f-time">
+            <option value="">Select time slot</option>
+            <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+            <option>12:00 PM</option><option>1:00 PM</option><option>2:00 PM</option>
+            <option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label" style="text-transform:uppercase;font-size:11.5px;font-weight:700;color:var(--text-muted)">Call SID <span style="color:var(--text-light);font-weight:400;text-transform:none">(optional)</span></label>
+          <input type="text" class="form-input" id="f-sid" placeholder="Twilio Call SID – auto-filled for voice bookings">
+          <span class="form-hint">Leave blank for manual entries.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveAppointment()">Save Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── View Appointment Detail Modal ──────────────────────────── -->
+<div class="modal-overlay" id="detail-overlay" onclick="closeDetailOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detail-name">Patient Details</div>
+        <div class="modal-subtitle" id="detail-sid">Call SID</div>
+      </div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="detail-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetail()">Close</button>
+      <button class="btn btn-danger" id="detail-delete-btn">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Doctor Profile Modal ────────────────────────────────────── -->
+<div class="modal-overlay" id="doctor-overlay" onclick="closeDoctorOutside(event)">
+  <div class="modal" style="width:620px">
+    <div class="modal-header">
+      <div style="flex:1">
+        <div class="modal-title" id="doctor-modal-title">Doctor Profile</div>
+        <div class="modal-subtitle" id="doctor-modal-sub">Specialist details & patient history</div>
+      </div>
+      <button class="modal-close" onclick="closeDoctor()">✕</button>
+    </div>
+    <div class="modal-body" id="doctor-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDoctor()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Stat Detail Modal ───────────────────────────────────────── -->
+<div class="modal-overlay" id="stat-overlay" onclick="closeStatOutside(event)">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="stat-modal-title">Appointments</div>
+        <div class="modal-subtitle" id="stat-modal-sub">Detailed breakdown</div>
+      </div>
+      <button class="modal-close" onclick="closeStat()">✕</button>
+    </div>
+    <div class="modal-body" id="stat-modal-body" style="padding:22px 26px 8px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeStat()">Close</button>
+      <button class="btn btn-primary" id="stat-modal-action-btn">View in Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────
+const API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:5000'
+  : window.location.origin;
+
+const DOCTORS_LIST = {
+  "Dr. Sharma":  { specialty: "General Physician",  color: "blue",   emoji: "🩺" },
+  "Dr. Mehta":   { specialty: "General Physician",  color: "teal",   emoji: "🩺" },
+  "Dr. Verma":   { specialty: "Cardiologist",       color: "red",    emoji: "❤️" },
+  "Dr. Gupta":   { specialty: "Cardiologist",       color: "red",    emoji: "❤️" },
+  "Dr. Khan":    { specialty: "Dermatologist",      color: "amber",  emoji: "🌿" },
+  "Dr. Roy":     { specialty: "Dermatologist",      color: "amber",  emoji: "🌿" },
+  "Dr. Kapoor":  { specialty: "Orthopedic Surgeon", color: "blue",   emoji: "🦴" },
+  "Dr. Singh":   { specialty: "Ophthalmologist",    color: "teal",   emoji: "👁"  },
+  "Dr. Bose":    { specialty: "ENT Specialist",     color: "green",  emoji: "👂" },
+  "Dr. Nair":    { specialty: "Neurologist",        color: "purple", emoji: "🧠" },
+};
+
+const COLOR_MAP = { blue:'#dbeafe', teal:'#caf0f8', red:'#fee2e2', amber:'#fff3cd', green:'#d0f5e8', purple:'#ede9fe' };
+const TEXT_MAP  = { blue:'#1d4ed8', teal:'#0077a8', red:'#b91c1c', amber:'#92400e', green:'#047857', purple:'#6d28d9' };
+const AVATAR_COLORS = ['avatar-blue','avatar-teal','avatar-amber','avatar-green','avatar-purple','avatar-pink'];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let allAppointments = [];
+let filteredAppointments = [];
+let currentPage = 1;
+const PAGE_SIZE = 10;
+let activeFilter = 'all';
+let activeCallFilter = 'all';
+let viewingIndex = null;
+let sortField = null;
+let sortDir = 'asc';
+let searchTimeout = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function truncate(s, n) { return s.length > n ? s.slice(0,n) + '…' : s; }
+function formatDate(s) {
+  if (!s) return '';
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true });
+  } catch { return s; }
+}
+function formatDateDisplay(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+}
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const days   = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let h = ist.getHours(), m = ist.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clock-time').innerHTML =
+    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}<span class="ampm">${ampm}</span>`;
+  document.getElementById('clock-date').textContent =
+    `${ist.getDate()} ${months[ist.getMonth()]} ${ist.getFullYear()} · IST`;
+  document.getElementById('clock-day').textContent = days[ist.getDay()];
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  fetchAppointments();
+  setInterval(fetchAppointments, 30000);
+});
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function fetchAppointments() {
+  try {
+    const res = await fetch(`${API_BASE}/api/appointments`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allAppointments = data.appointments || [];
+    onDataLoaded(); hideBanner();
+  } catch(e) {
+    showBanner(`⚠️ Could not connect to Flask backend at ${API_BASE}. Showing demo data. Make sure your Flask server is running.`);
+    allAppointments = getDemoData();
+    onDataLoaded();
+  }
+}
+
+function onDataLoaded() {
+  updateStats();
+  renderTable();
+  renderCallLogs();
+  updateSidebarCount();
+  renderDoctors();
+  renderAnalytics();
+  renderCharts();
+}
+
+async function saveAppointmentToServer(payload) {
+  const res = await fetch(`${API_BASE}/api/appointments`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+  });
+  if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.error || `HTTP ${res.status}`); }
+  return res.json();
+}
+
+async function deleteAppointmentFromServer(index) {
+  const res = await fetch(`${API_BASE}/api/appointments/${index}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── Demo data ──────────────────────────────────────────────────────────────
+function getDemoData() {
+  const today = new Date().toISOString().split('T')[0];
+  const yest  = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  const d2    = new Date(Date.now()-86400000*2).toISOString().split('T')[0];
+  const d3    = new Date(Date.now()-86400000*3).toISOString().split('T')[0];
+  const d4    = new Date(Date.now()-86400000*4).toISOString().split('T')[0];
+  const d5    = new Date(Date.now()-86400000*5).toISOString().split('T')[0];
+  return [
+    { serial:1, name:"Lakhan Arora",   disease:"High fever for last few days",        doctor:"Dr. Sharma", preferred_time:"31 May at 10:00 AM", call_sid:"CA8d5387b7c2f24d", recorded_at:`${today} 09:14:31` },
+    { serial:2, name:"Priya Mehta",    disease:"Cold, sore throat and cough",          doctor:"Dr. Mehta",  preferred_time:"31 May at 11:00 AM", call_sid:"CAa83ab0d6c3a985", recorded_at:`${today} 10:28:24` },
+    { serial:3, name:"Rajesh Kumar",   disease:"Chest pain and heart palpitations",    doctor:"Dr. Verma",  preferred_time:"1 June at 2:00 PM",  call_sid:"CA548801017c922b", recorded_at:`${today} 11:55:10` },
+    { serial:4, name:"Sunita Singh",   disease:"Skin rash and persistent itching",     doctor:"Dr. Khan",   preferred_time:"2 June at 3:00 PM",  call_sid:"CA1637021cef064d", recorded_at:`${yest} 09:01:23` },
+    { serial:5, name:"Vikram Nair",    disease:"Migraine and severe dizziness",        doctor:"Dr. Nair",   preferred_time:"6 June at 4:00 PM",  call_sid:"CA464d763ecdc56e", recorded_at:`${yest} 14:44:38` },
+    { serial:6, name:"Anjali Gupta",   disease:"Knee pain and difficulty walking",     doctor:"Dr. Kapoor", preferred_time:"3 June at 10:00 AM", call_sid:"CA5574bc12def456", recorded_at:`${yest} 16:20:11` },
+    { serial:7, name:"Mohan Das",      disease:"Eye strain and blurred vision",        doctor:"Dr. Singh",  preferred_time:"4 June at 9:00 AM",  call_sid:"CA6685cd23efa567", recorded_at:`${d2} 10:05:45` },
+    { serial:8, name:"Kavya Reddy",    disease:"Ear infection and hearing issues",     doctor:"Dr. Bose",   preferred_time:"5 June at 11:00 AM", call_sid:"CA7796de34fgb678", recorded_at:`${d2} 13:30:22` },
+    { serial:9, name:"Sanjay Roy",     disease:"Acne and skin inflammation",           doctor:"Dr. Roy",    preferred_time:"7 June at 2:00 PM",  call_sid:"CA8807ef45ghc789", recorded_at:`${d3} 11:15:33` },
+    { serial:10,name:"Deepa Sharma",   disease:"High fever and body ache",             doctor:"Dr. Mehta",  preferred_time:"8 June at 3:00 PM",  call_sid:"CA9918fg56hid890", recorded_at:`${d3} 15:45:01` },
+    { serial:11,name:"Arjun Patel",    disease:"Chest tightness and breathlessness",   doctor:"Dr. Gupta",  preferred_time:"9 June at 1:00 PM",  call_sid:"CAaa29gh67ije901", recorded_at:`${d4} 09:50:17` },
+    { serial:12,name:"Meena Joshi",    disease:"Chronic back pain",                    doctor:"Dr. Kapoor", preferred_time:"10 June at 10:00 AM",call_sid:"CAbb30hi78jkf012", recorded_at:`${d4} 14:22:39` },
+    { serial:13,name:"Ravi Shankar",   disease:"Seasonal allergies and sneezing",      doctor:"Dr. Sharma", preferred_time:"11 June at 9:00 AM", call_sid:"CAcc41ij89klg123", recorded_at:`${d5} 10:08:55` },
+    { serial:14,name:"Fatima Khan",    disease:"Recurring headaches",                  doctor:"Dr. Nair",   preferred_time:"12 June at 4:00 PM", call_sid:"CAdd52jk90lmh234", recorded_at:`${d5} 16:34:08` },
+  ];
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  const total = allAppointments.length;
+  document.getElementById('stat-total').textContent = total;
+  const today = new Date().toISOString().split('T')[0];
+  const todayCnt = allAppointments.filter(a => (a.recorded_at||'').startsWith(today)).length;
+  document.getElementById('stat-today').textContent = todayCnt;
+  const doctors = new Set(allAppointments.map(a => a.doctor).filter(Boolean));
+  document.getElementById('stat-doctors').textContent = doctors.size || '—';
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  document.getElementById('stat-week').textContent = allAppointments.filter(a => new Date(a.recorded_at) > weekAgo).length;
+
+  // Update doctor filter dropdown
+  const sel = document.getElementById('filter-doctor'), cur = sel.value;
+  sel.innerHTML = '<option value="">All Doctors</option>';
+  [...doctors].sort().forEach(d => {
+    const o = document.createElement('option'); o.value = d; o.textContent = d;
+    if (d === cur) o.selected = true; sel.appendChild(o);
+  });
+}
+
+function updateSidebarCount() {
+  document.getElementById('sidebar-count').textContent = allAppointments.length;
+}
+
+// ── Charts ─────────────────────────────────────────────────────────────────
+function renderCharts() {
+  renderTrendChart();
+  renderDonutChart();
+}
+
+function renderTrendChart() {
+  const days = 7;
+  const svg = document.getElementById('trend-svg');
+  const labelsEl = document.getElementById('trend-labels');
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const data = [];
+  const labels = [];
+
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(Date.now() - i*86400000);
+    const key = d.toISOString().split('T')[0];
+    const count = allAppointments.filter(a => (a.recorded_at||'').startsWith(key)).length;
+    data.push(count);
+    labels.push(dayNames[d.getDay()]);
+  }
+
+  const max = Math.max(...data, 1);
+  const w = 400, h = 100;
+  const pts = data.map((v,i) => {
+    const x = (i / (days-1)) * (w-20) + 10;
+    const y = h - 8 - (v/max)*(h-20);
+    return `${x},${y}`;
+  });
+  const pointsStr = pts.join(' ');
+  const firstPt = pts[0].split(',');
+  const lastPt  = pts[pts.length-1].split(',');
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1a6cf5" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#1a6cf5" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${firstPt[0]},${h} ${pointsStr} ${lastPt[0]},${h}" fill="url(#tg)"/>
+    <polyline points="${pointsStr}" fill="none" stroke="#1a6cf5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p,i) => {
+      const [x,y] = p.split(',');
+      return data[i] > 0 ? `<circle cx="${x}" cy="${y}" r="4" fill="#1a6cf5" stroke="white" stroke-width="2"/>` : '';
+    }).join('')}
+  `;
+
+  labelsEl.innerHTML = labels.map((l,i) => {
+    const isActive = data[i] > 0;
+    return `<span style="font-size:9px;font-weight:${isActive?'700':'500'};color:${isActive?'var(--accent)':'var(--text-light)'};flex:1;text-align:center">${l}</span>`;
+  }).join('');
+}
+
+function renderDonutChart() {
+  const docMap = {};
+  allAppointments.forEach(a => { if (a.doctor) docMap[a.doctor] = (docMap[a.doctor]||0)+1; });
+  const sorted = Object.entries(docMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const total = sorted.reduce((s,[,v])=>s+v, 0);
+
+  document.getElementById('donut-total').textContent = total || allAppointments.length;
+
+  if (!sorted.length) {
+    document.getElementById('donut-svg').innerHTML = '';
+    document.getElementById('donut-legend').innerHTML = '<div style="font-size:12px;color:var(--text-light)">No data yet</div>';
+    return;
+  }
+
+  const COLORS = ['#1a6cf5','#0096c7','#0a9e6c','#e9930a','#7c3aed'];
+  const cx=45, cy=45, r=35, strokeW=10;
+  let startAngle = -Math.PI/2;
+  let paths = '';
+
+  sorted.forEach(([,cnt], i) => {
+    const frac = cnt/total;
+    const angle = frac * 2 * Math.PI;
+    const x1 = cx + r*Math.cos(startAngle);
+    const y1 = cy + r*Math.sin(startAngle);
+    const x2 = cx + r*Math.cos(startAngle+angle);
+    const y2 = cy + r*Math.sin(startAngle+angle);
+    const large = angle > Math.PI ? 1 : 0;
+    const col = COLORS[i % COLORS.length];
+    paths += `<path d="M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${col}" opacity="0.9"/>`;
+    startAngle += angle;
+  });
+
+  // Inner white circle for donut effect
+  paths += `<circle cx="${cx}" cy="${cy}" r="${r-strokeW}" fill="white"/>`;
+  document.getElementById('donut-svg').innerHTML = paths;
+
+  document.getElementById('donut-legend').innerHTML = sorted.map(([name,cnt],i) => {
+    const pct = Math.round(cnt/total*100);
+    const short = name.replace('Dr. ','');
+    return `<div class="donut-legend-item">
+      <div class="donut-dot" style="background:${COLORS[i%COLORS.length]}"></div>
+      <div class="donut-legend-text">${esc(short)}</div>
+      <div class="donut-legend-val">${cnt} <span style="font-size:10px;font-weight:400">(${pct}%)</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ── Analytics ──────────────────────────────────────────────────────────────
+function renderAnalytics() {
+  renderTopDiseases();
+  renderPeakHours();
+  renderLeaderboard();
+  renderWeeklyBar();
+}
+
+function renderTopDiseases() {
+  const keywords = {};
+  const common = ['and','the','with','from','of','a','an','in','for','to','is','or','my'];
+  allAppointments.forEach(a => {
+    if (!a.disease) return;
+    const words = a.disease.toLowerCase().split(/\W+/).filter(w => w.length>3 && !common.includes(w));
+    words.forEach(w => keywords[w] = (keywords[w]||0)+1);
+  });
+  const sorted = Object.entries(keywords).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max = sorted[0]?.[1]||1;
+  const COLORS = ['#1a6cf5','#0096c7','#0a9e6c','#e9930a','#7c3aed','#e91e8c','#ef4444','#f59e0b'];
+
+  const el = document.getElementById('disease-list');
+  if (!sorted.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-muted)">No data yet.</div>'; return;
+  }
+  el.innerHTML = sorted.map(([word, cnt], i) => `
+    <div class="disease-item">
+      <div class="disease-label" style="text-transform:capitalize">${word}</div>
+      <div class="disease-bar-track">
+        <div class="disease-bar-fill" style="width:${(cnt/max*100)}%;background:${COLORS[i%COLORS.length]}"></div>
+      </div>
+      <div class="disease-count">${cnt}</div>
+    </div>
+  `).join('');
+}
+
+function renderPeakHours() {
+  const hours = new Array(12).fill(0); // 6am to 5pm slots, grouped
+  const labels = ['6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p'];
+  allAppointments.forEach(a => {
+    if (!a.recorded_at) return;
+    const h = new Date(a.recorded_at).getHours();
+    if (h>=6 && h<=17) hours[h-6]++;
+  });
+  const max = Math.max(...hours, 1);
+  const COLORS_PEAK = hours.map(v => v === Math.max(...hours) ? '#1a6cf5' : '#93c5fd');
+
+  const el = document.getElementById('peak-hours-chart');
+  const labelsEl = document.getElementById('peak-hours-labels');
+
+  el.innerHTML = hours.map((v,i) => `
+    <div class="peak-bar-wrap">
+      <div class="peak-bar" style="height:${Math.max(4,(v/max*75))}px;background:${COLORS_PEAK[i]}">
+        ${v>0?`<div class="peak-bar-tooltip">${v} call${v!==1?'s':''}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+
+  labelsEl.innerHTML = labels.map(l =>
+    `<span style="font-size:8.5px;color:var(--text-light);font-weight:600;flex:1;text-align:center">${l}</span>`
+  ).join('');
+}
+
+function renderLeaderboard() {
+  const docMap = {};
+  allAppointments.forEach(a => { if(a.doctor) docMap[a.doctor] = (docMap[a.doctor]||0)+1; });
+  const sorted = Object.entries(docMap).sort((a,b)=>b[1]-a[1]);
+  const maxCnt = sorted[0]?.[1]||1;
+  const total  = allAppointments.length;
+  const COLORS = ['#1a6cf5','#0096c7','#0a9e6c','#e9930a','#7c3aed','#e91e8c','#ef4444','#f59e0b','#6366f1','#14b8a6'];
+
+  const el = document.getElementById('leaderboard-list');
+  if (!sorted.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:20px">No data yet.</div>'; return;
+  }
+
+  el.innerHTML = sorted.map(([name, cnt], i) => {
+    const info = DOCTORS_LIST[name] || {};
+    const pct = total ? Math.round(cnt/total*100) : 0;
+    const bg  = COLOR_MAP[info.color] || '#f1f5f9';
+    const tc  = TEXT_MAP[info.color]  || '#64748b';
+    const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    const barColor = COLORS[i % COLORS.length];
+
+    return `<div style="display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDoctorModal('${esc(name)}')">
+      <div style="width:22px;font-size:13px;font-weight:700;color:var(--text-muted);text-align:center">${i+1}</div>
+      <div style="width:38px;height:38px;border-radius:11px;background:${bg};color:${tc};font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;font-weight:600;color:var(--navy)">${esc(name)}</div>
+        <div style="font-size:11.5px;color:var(--text-muted)">${esc(info.specialty||'Specialist')} ${info.emoji||''}</div>
+        <div style="margin-top:5px;height:4px;background:#edf1f7;border-radius:100px;overflow:hidden">
+          <div style="height:100%;width:${(cnt/maxCnt*100)}%;background:${barColor};border-radius:100px;transition:width 0.6s ease"></div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:var(--font-serif);font-size:22px;color:${tc};line-height:1">${cnt}</div>
+        <div style="font-size:10px;color:var(--text-light)">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeeklyBar() {
+  const days = 7;
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const bars = [];
+
+  for (let i = days-1; i>=0; i--) {
+    const d = new Date(Date.now() - i*86400000);
+    const key = d.toISOString().split('T')[0];
+    const cnt = allAppointments.filter(a => (a.recorded_at||'').startsWith(key)).length;
+    bars.push({ day: dayNames[d.getDay()], cnt });
+  }
+
+  const max = Math.max(...bars.map(b=>b.cnt), 1);
+  const COLORS_BAR = ['#1a6cf5','#0096c7','#0a9e6c','#e9930a','#7c3aed','#e91e8c','#14b8a6'];
+  const el = document.getElementById('weekly-bar-chart');
+
+  el.innerHTML = bars.map((b,i) => `
+    <div class="bar-item">
+      <div class="bar-val">${b.cnt}</div>
+      <div class="bar" style="height:${Math.max(6,(b.cnt/max*70))}px;background:${COLORS_BAR[i%COLORS_BAR.length]}"></div>
+      <div class="bar-label">${b.day}</div>
+    </div>
+  `).join('');
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+function onSearchInput() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(renderTable, 200);
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPage = 1; renderTable();
+}
+
+function clearFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-doctor').value = '';
+  document.getElementById('filter-status').value = '';
+  activeFilter = 'all'; sortField = null; sortDir = 'asc';
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.classList.contains('sortable') && !th.classList.contains('sort-asc') && !th.classList.contains('sort-desc')) {}
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  currentPage = 1; renderTable();
+}
+
+function sortTable(field) {
+  if (sortField === field) sortDir = sortDir==='asc' ? 'desc' : 'asc';
+  else { sortField = field; sortDir = 'asc'; }
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+  });
+  const fieldMap = { serial:0, name:1, doctor:3, preferred_time:5, recorded_at:6 };
+  const thIdx = fieldMap[field];
+  if (thIdx !== undefined) {
+    const ths = document.querySelectorAll('thead th');
+    ths[thIdx]?.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  }
+  currentPage = 1; renderTable();
+}
+
+function renderTable() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const filterDoc    = document.getElementById('filter-doctor').value;
+  const filterStatus = document.getElementById('filter-status').value;
+  const today   = new Date().toISOString().split('T')[0];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+
+  filteredAppointments = allAppointments.filter(a => {
+    if (activeFilter==='today' && !(a.recorded_at||'').startsWith(today)) return false;
+    if (activeFilter==='week'  && new Date(a.recorded_at) < weekAgo) return false;
+    if (filterDoc && a.doctor !== filterDoc) return false;
+    if (filterStatus) {
+      const isGood = a.name && a.name!=='there' && a.name!=='Unknown' && a.doctor && a.doctor!=='SSS';
+      if (filterStatus==='completed' && !isGood) return false;
+      if (filterStatus==='pending'   &&  isGood) return false;
+    }
+    if (q) {
+      const hay = [a.name,a.disease,a.doctor,a.preferred_time,a.call_sid].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (sortField) {
+    filteredAppointments = [...filteredAppointments].sort((a,b) => {
+      let va = a[sortField]||'', vb = b[sortField]||'';
+      if (sortField==='serial') { va=Number(va); vb=Number(vb); }
+      const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+      return sortDir==='asc' ? cmp : -cmp;
+    });
+  }
+
+  const total = filteredAppointments.length;
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page  = filteredAppointments.slice(start, start+PAGE_SIZE);
+
+  document.getElementById('table-meta').textContent  = `${total} record${total!==1?'s':''}`;
+  document.getElementById('table-count').textContent = total
+    ? `Showing ${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total}`
+    : '0 records';
+
+  const tbody = document.getElementById('appointments-tbody');
+
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><p>No appointments found.</p></div></td></tr>`;
+    renderPagination(total); return;
+  }
+
+  tbody.innerHTML = page.map((a, i) => {
+    const idx = start + i;
+    const initials = (a.name||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const avCls    = AVATAR_COLORS[idx%6];
+    const docInfo  = DOCTORS_LIST[a.doctor] || {};
+    const docBg    = COLOR_MAP[docInfo.color]||'#f1f5f9';
+    const docTc    = TEXT_MAP[docInfo.color]||'#64748b';
+    const isGood   = a.name && a.name!=='there' && a.name!=='Unknown' && a.doctor && a.doctor!=='SSS';
+    const statusHtml = isGood
+      ? `<span class="status-indicator completed">● Confirmed</span>`
+      : `<span class="status-indicator pending">● Pending</span>`;
+    const rec    = a.recorded_at ? formatDate(a.recorded_at) : '—';
+    const sid    = a.call_sid ? a.call_sid.slice(-8) : '—';
+    const qHl    = (str) => q && str.toLowerCase().includes(q)
+      ? str.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'), m=>`<mark class="highlight">${m}</mark>`)
+      : str;
+
+    return `<tr onclick="viewAppointment(${idx})">
+      <td class="muted" style="font-size:12px">${a.serial||idx+1}</td>
+      <td>
+        <div class="patient-cell">
+          <div class="avatar ${avCls}">${initials}</div>
+          <div>
+            <div class="patient-name">${qHl(esc(a.name||'Unknown'))}</div>
+            <div class="patient-sid">${sid}</div>
+          </div>
+        </div>
+      </td>
+      <td style="max-width:180px"><span title="${esc(a.disease||'')}" style="font-size:12.5px;color:var(--text-muted)">${qHl(esc(truncate(a.disease||'—',45)))}</span></td>
+      <td>
+        <span style="display:inline-flex;align-items:center;gap:5px;background:${docBg};color:${docTc};padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600">
+          ${docInfo.emoji||'👤'} ${qHl(esc(a.doctor||'—'))}
+        </span>
+      </td>
+      <td>${statusHtml}</td>
+      <td><span class="badge badge-teal" style="font-size:11px">🕐 ${esc(truncate(a.preferred_time||'—',28))}</span></td>
+      <td class="muted">${rec}</td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;border-radius:100px" onclick="viewAppointment(${idx})">👁 View</button>
+          <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;border-radius:100px" onclick="confirmDelete(${allAppointments.indexOf(filteredAppointments[idx])})"">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(total);
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total/PAGE_SIZE);
+  const c = document.getElementById('pagination');
+  if (pages <= 1) { c.innerHTML=''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let p=1; p<=pages; p++) {
+    if (p===1||p===pages||Math.abs(p-currentPage)<=1)
+      html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    else if (Math.abs(p-currentPage)===2)
+      html += `<button class="page-btn" disabled>…</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+  c.innerHTML = html;
+}
+
+function goPage(p) {
+  const pages = Math.ceil(filteredAppointments.length/PAGE_SIZE);
+  if (p<1||p>pages) return; currentPage = p; renderTable();
+}
+
+// ── Doctors ────────────────────────────────────────────────────────────────
+let doctorViewFilter = 'all';
+
+function filterDoctors(mode, btn) {
+  doctorViewFilter = mode;
+  document.querySelectorAll('#tab-doctors .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDoctors();
+}
+
+function renderDoctors() {
+  const today = new Date().toISOString().split('T')[0];
+  const grid = document.getElementById('doctor-grid');
+
+  const entries = Object.entries(DOCTORS_LIST).filter(([name]) => {
+    if (doctorViewFilter === 'active') {
+      return allAppointments.some(a => a.doctor===name && (a.recorded_at||'').startsWith(today));
+    }
+    return true;
+  });
+
+  if (!entries.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🩺</div><p>No active doctors today.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = entries.map(([name, info]) => {
+    const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    const bg   = COLOR_MAP[info.color]||'#f1f5f9';
+    const tc   = TEXT_MAP[info.color]||'#64748b';
+    const cnt  = allAppointments.filter(a => a.doctor===name).length;
+    const maxCnt = Math.max(...Object.keys(DOCTORS_LIST).map(n=>allAppointments.filter(a=>a.doctor===n).length),1);
+    const todayCnt = allAppointments.filter(a=>a.doctor===name&&(a.recorded_at||'').startsWith(today)).length;
+    const pct = Math.round(cnt/maxCnt*100);
+    const isActiveToday = todayCnt > 0;
+
+    return `<div class="doctor-card" onclick="openDoctorModal('${esc(name)}')">
+      ${isActiveToday ? `<div class="notif-dot"></div>` : ''}
+      <div class="doctor-avatar" style="background:${bg};color:${tc}">${initials}</div>
+      <div class="doctor-name">${esc(name)}</div>
+      <div class="doctor-spec">${esc(info.specialty)} ${info.emoji}</div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:7px">
+        <span class="badge badge-gray">${cnt} patient${cnt!==1?'s':''}</span>
+        ${isActiveToday ? `<span class="badge badge-green" style="font-size:10px">Today: ${todayCnt}</span>` : ''}
+      </div>
+      <div class="availability-bar">
+        <div class="availability-fill" style="width:${pct}%;background:${tc}"></div>
+      </div>
+      <div class="avail-label">
+        <span>Workload</span><span>${pct}%</span>
+      </div>
+      <div class="doctor-card-click-hint">View Profile →</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Doctor Modal ───────────────────────────────────────────────────────────
+function openDoctorModal(name) {
+  const info = DOCTORS_LIST[name];
+  if (!info) return;
+  const bg = COLOR_MAP[info.color]||'#f1f5f9';
+  const tc = TEXT_MAP[info.color]||'#64748b';
+  const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const patients = allAppointments.filter(a => a.doctor===name);
+  const total = patients.length;
+  const today   = new Date().toISOString().split('T')[0];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  const todayPts = patients.filter(a=>(a.recorded_at||'').startsWith(today)).length;
+  const weekPts  = patients.filter(a=>new Date(a.recorded_at)>weekAgo).length;
+
+  document.getElementById('doctor-modal-title').textContent = name;
+  document.getElementById('doctor-modal-sub').textContent   = `${info.specialty} · ${info.emoji} Patient Profile`;
+
+  const recent = [...patients].reverse().slice(0,8);
+  const patientRows = recent.length
+    ? recent.map((a,i) => {
+        const initP = (a.name||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+        const avCls = AVATAR_COLORS[i%6];
+        return `<div class="doctor-patient-item">
+          <div class="avatar ${avCls}" style="width:34px;height:34px;font-size:12px">${initP}</div>
+          <div class="dpi-info">
+            <div class="dpi-name">${esc(a.name||'Unknown')}</div>
+            <div class="dpi-detail">${esc(truncate(a.disease||'—',48))}</div>
+          </div>
+          <div class="dpi-time">${a.preferred_time||'—'}</div>
+        </div>`;
+      }).join('')
+    : `<div class="empty-state" style="padding:24px"><div class="empty-state-icon">🗂️</div><p>No patients booked yet.</p></div>`;
+
+  document.getElementById('doctor-modal-body').innerHTML = `
+    <div class="doctor-modal-header">
+      <div class="doctor-modal-avatar" style="background:${bg};color:${tc}">${initials}</div>
+      <div>
+        <div class="doctor-modal-name">${esc(name)}</div>
+        <div class="doctor-modal-spec">${esc(info.specialty)}</div>
+        <div style="margin-top:8px"><span class="badge badge-gray">${info.emoji} ${info.specialty}</span></div>
+      </div>
+    </div>
+    <div class="doctor-stats-row">
+      <div class="doctor-stat-mini">
+        <div class="val" style="color:${tc}">${total}</div>
+        <div class="lbl">Total Patients</div>
+      </div>
+      <div class="doctor-stat-mini">
+        <div class="val">${todayPts}</div>
+        <div class="lbl">Today</div>
+      </div>
+      <div class="doctor-stat-mini">
+        <div class="val">${weekPts}</div>
+        <div class="lbl">This Week</div>
+      </div>
+    </div>
+    <div class="doctor-patients-section">
+      <h4>Recent Patient Appointments</h4>
+      ${patientRows}
+    </div>
+  `;
+  document.getElementById('doctor-overlay').classList.add('open');
+}
+
+function closeDoctor()        { document.getElementById('doctor-overlay').classList.remove('open'); }
+function closeDoctorOutside(e){ if(e.target===document.getElementById('doctor-overlay')) closeDoctor(); }
+
+// ── Call Logs ──────────────────────────────────────────────────────────────
+function setCallFilter(f, btn) {
+  activeCallFilter = f;
+  document.querySelectorAll('.call-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCallLogs();
+}
+
+function renderCallLogs() {
+  let list = [...allAppointments].reverse();
+  if (activeCallFilter !== 'all') {
+    list = list.filter(a => {
+      const isGood = a.name && a.name!=='there' && a.name!=='Unknown';
+      const hasDoc = a.doctor && a.doctor!=='SSS';
+      const status = isGood&&hasDoc?'completed':isGood?'partial':'failed';
+      return status === activeCallFilter;
+    });
+  }
+  document.getElementById('call-count').textContent = `${list.length} record${list.length!==1?'s':''}`;
+
+  const el = document.getElementById('call-log-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📞</div><p>No call logs found.</p></div>'; return;
+  }
+
+  el.innerHTML = list.map(a => {
+    const isGood = a.name && a.name!=='there' && a.name!=='Unknown';
+    const hasDoc = a.doctor && a.doctor!=='SSS';
+    const dotCls = isGood&&hasDoc?'completed':isGood?'partial':'failed';
+    const statusText = dotCls==='completed'?'Completed':dotCls==='partial'?'Partial':'Incomplete';
+    const docInfo = DOCTORS_LIST[a.doctor] || {};
+
+    return `<div class="call-log-item">
+      <div class="call-dot ${dotCls}"></div>
+      <div class="call-info">
+        <div class="call-name">${esc(a.name||'Unknown Patient')}</div>
+        <div class="call-detail">
+          ${docInfo.emoji||''} ${esc(a.doctor||'No doctor')} ·
+          <span style="color:${dotCls==='completed'?'var(--green)':dotCls==='partial'?'var(--amber)':'var(--red)'};font-weight:600">${statusText}</span> ·
+          <span style="font-family:monospace;font-size:10.5px">${esc(truncate(a.call_sid||'',20))}</span>
+        </div>
+      </div>
+      <div class="call-time">${a.recorded_at?formatDate(a.recorded_at):''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── View Appointment Detail ────────────────────────────────────────────────
+function viewAppointment(idx) {
+  const a = filteredAppointments[idx];
+  if (!a) return;
+  viewingIndex = idx;
+  document.getElementById('detail-name').textContent = a.name||'Unknown';
+  document.getElementById('detail-sid').textContent  = `Call SID: ${a.call_sid||'N/A'}`;
+
+  const fields = [
+    ['Serial #',           a.serial||'—'],
+    ['Patient Name',       a.name||'—'],
+    ['Disease / Symptoms', a.disease||'—'],
+    ['Assigned Doctor',    a.doctor||'—'],
+    ['Appointment Time',   a.preferred_time||'—'],
+    ['Recorded At',        a.recorded_at||'—'],
+    ['Call SID',           a.call_sid||'—'],
+  ];
+
+  document.getElementById('detail-grid').innerHTML = fields.map(([label,value]) =>
+    `<div class="detail-field">
+      <div class="detail-label">${label}</div>
+      <div class="detail-value">${esc(String(value))}</div>
+    </div>`
+  ).join('');
+
+  const realIdx = allAppointments.indexOf(a);
+  document.getElementById('detail-delete-btn').onclick = () => { closeDetail(); confirmDelete(realIdx); };
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail()        { document.getElementById('detail-overlay').classList.remove('open'); }
+function closeDetailOutside(e){ if(e.target===document.getElementById('detail-overlay')) closeDetail(); }
+
+// ── Add / Save Modal ───────────────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('modal-title').textContent    = 'Add Appointment';
+  document.getElementById('modal-subtitle').textContent = 'Manually enter patient details';
+  document.getElementById('modal-save-btn').textContent = 'Save Appointment';
+  ['f-name','f-disease','f-sid'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-doctor').value = '';
+  document.getElementById('f-time').value   = '';
+  document.getElementById('f-date').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 100);
+}
+
+function closeModal()        { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOutside(e){ if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+async function saveAppointment() {
+  const name    = document.getElementById('f-name').value.trim();
+  const disease = document.getElementById('f-disease').value.trim();
+  const doctor  = document.getElementById('f-doctor').value.trim();
+  const date    = document.getElementById('f-date').value;
+  const time    = document.getElementById('f-time').value;
+  const sid     = document.getElementById('f-sid').value.trim();
+
+  if (!name||!disease||!doctor||!date||!time) {
+    showToast('Please fill in all required fields.','error'); return;
+  }
+
+  const doctorName     = doctor.split('–')[0].trim();
+  const preferredTime  = `${formatDateDisplay(date)} at ${time}`;
+  const payload = { name, disease, doctor:doctorName, preferred_time:preferredTime, call_sid:sid||`MANUAL-${Date.now()}` };
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.innerHTML = '<span class="spinner"></span>Saving…'; btn.disabled = true;
+
+  try {
+    await saveAppointmentToServer(payload);
+    closeModal();
+    showToast(`✅ Appointment saved for ${name}`, 'success');
+    await fetchAppointments();
+  } catch(e) {
+    const newAppt = { serial:allAppointments.length+1, ...payload,
+      recorded_at: new Date().toISOString().replace('T',' ').slice(0,19) };
+    allAppointments.push(newAppt);
+    closeModal();
+    showToast('✅ Saved locally (backend offline)', 'success');
+    onDataLoaded();
+  } finally {
+    btn.innerHTML = 'Save Appointment'; btn.disabled = false;
+  }
+}
+
+// ── Delete ─────────────────────────────────────────────────────────────────
+function confirmDelete(idx) {
+  const a = allAppointments[idx];
+  if (!a) return;
+  if (!confirm(`Delete appointment for "${a.name}"?\n\nThis cannot be undone.`)) return;
+  doDelete(idx);
+}
+
+async function doDelete(idx) {
+  try {
+    await deleteAppointmentFromServer(idx);
+    showToast('Appointment deleted.', 'success');
+    await fetchAppointments();
+  } catch(e) {
+    allAppointments.splice(idx, 1);
+    allAppointments.forEach((a,i) => a.serial=i+1);
+    showToast('Deleted locally (backend offline).', 'success');
+    onDataLoaded();
+  }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function showTab(tab, e) {
+  if (e) e.stopPropagation();
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (e && e.currentTarget) e.currentTarget.classList.add('active');
+
+  // Show/hide charts row depending on tab
+  const chartsRow = document.getElementById('charts-row');
+  chartsRow.style.display = tab === 'appointments' ? 'grid' : 'none';
+
+  const titles = {
+    appointments: ['Appointments',  'All patient bookings from Twilio voice calls'],
+    doctors:      ['Doctor Directory', 'Click any card to view full profile & history'],
+    calls:        ['Call Logs',     'Recent Twilio voice call sessions'],
+    analytics:    ['Analytics',     'Insights and performance metrics'],
+  };
+  document.getElementById('page-heading').textContent  = titles[tab][0];
+  document.getElementById('page-subtitle').textContent = titles[tab][1];
+
+  if (tab==='doctors') renderDoctors();
+  if (tab==='analytics') renderAnalytics();
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) toggleSidebar();
+}
+
+// ── Stat modals ────────────────────────────────────────────────────────────
+function openStatModal(type) {
+  const overlay = document.getElementById('stat-overlay');
+  const body    = document.getElementById('stat-modal-body');
+  const title   = document.getElementById('stat-modal-title');
+  const sub     = document.getElementById('stat-modal-sub');
+  const actBtn  = document.getElementById('stat-modal-action-btn');
+  const today   = new Date().toISOString().split('T')[0];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+
+  if (type==='all') {
+    title.textContent  = 'All Appointments';
+    sub.textContent    = `${allAppointments.length} total records`;
+    actBtn.textContent = 'View in Table';
+    actBtn.onclick = () => { closeStat(); switchToAppointmentsTab('all'); };
+    const list = allAppointments.slice().reverse().slice(0,20);
+    body.innerHTML = buildSummaryRow(
+      { v:allAppointments.length, l:'Total' },
+      { v:allAppointments.filter(a=>(a.recorded_at||'').startsWith(today)).length, l:'Today' },
+      { v:new Set(allAppointments.map(a=>a.doctor).filter(Boolean)).size, l:'Doctors' }
+    ) + buildPatientList(list, 'All appointments (most recent first)');
+
+  } else if (type==='today') {
+    const todayList = allAppointments.filter(a=>(a.recorded_at||'').startsWith(today));
+    title.textContent  = "Today's Calls";
+    sub.textContent    = `${todayList.length} appointment${todayList.length!==1?'s':''} recorded today`;
+    actBtn.textContent = "View Today's Records";
+    actBtn.onclick = () => { closeStat(); switchToAppointmentsTab('today'); };
+    const completed  = todayList.filter(a=>a.name&&a.name!=='there'&&a.name!=='Unknown'&&a.doctor&&a.doctor!=='SSS').length;
+    const incomplete = todayList.length - completed;
+    body.innerHTML = buildSummaryRow(
+      { v:todayList.length, l:"Today's Total" },
+      { v:completed,        l:'Completed' },
+      { v:incomplete,       l:'Incomplete' }
+    ) + buildPatientList(todayList.slice().reverse(), "Today's appointments");
+
+  } else if (type==='week') {
+    const weekList = allAppointments.filter(a=>new Date(a.recorded_at)>weekAgo);
+    title.textContent  = 'This Week';
+    sub.textContent    = `${weekList.length} appointment${weekList.length!==1?'s':''} in the last 7 days`;
+    actBtn.textContent = 'View This Week';
+    actBtn.onclick = () => { closeStat(); switchToAppointmentsTab('week'); };
+    const byDay = {};
+    weekList.forEach(a=>{const d=(a.recorded_at||'').split(' ')[0]||'?';byDay[d]=(byDay[d]||0)+1;});
+    const busiest = Object.entries(byDay).sort((a,b)=>b[1]-a[1])[0];
+    body.innerHTML = buildSummaryRow(
+      { v:weekList.length, l:'This Week' },
+      { v:busiest?busiest[1]:0, l:'Busiest Day' },
+      { v:new Set(weekList.map(a=>a.doctor).filter(Boolean)).size, l:'Doctors' }
+    ) + buildPatientList(weekList.slice().reverse(), 'Appointments this week');
+
+  } else if (type==='doctors') {
+    title.textContent  = 'Doctor Breakdown';
+    sub.textContent    = 'Appointment count per assigned doctor';
+    actBtn.textContent = 'View Doctor Directory';
+    actBtn.onclick = () => { closeStat(); showTab('doctors', null); };
+    const docMap = {};
+    allAppointments.forEach(a=>{ if(a.doctor) docMap[a.doctor]=(docMap[a.doctor]||0)+1; });
+    const sorted = Object.entries(docMap).sort((a,b)=>b[1]-a[1]);
+    const doctorRows = sorted.length ? sorted.map(([name,cnt]) => {
+      const info = DOCTORS_LIST[name]||{};
+      const bg   = COLOR_MAP[info.color]||'#f1f5f9';
+      const tc   = TEXT_MAP[info.color]||'#64748b';
+      const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const pct = allAppointments.length ? Math.round(cnt/allAppointments.length*100):0;
+      return `<div class="stat-modal-item" onclick="closeStat();openDoctorModal('${esc(name)}')" style="cursor:pointer">
+        <div class="avatar" style="background:${bg};color:${tc};width:34px;height:34px;font-size:11px;font-weight:700;flex-shrink:0">${initials}</div>
+        <div class="stat-modal-item-info">
+          <div class="stat-modal-item-name">${esc(name)}</div>
+          <div class="stat-modal-item-sub">${esc(info.specialty||'Specialist')}</div>
+          <div style="margin-top:5px;height:4px;background:#edf1f7;border-radius:100px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${tc};border-radius:100px;transition:width 0.6s"></div>
+          </div>
+        </div>
+        <div class="stat-modal-item-right">
+          <div style="font-family:var(--font-serif);font-size:18px;font-weight:700;color:${tc}">${cnt}</div>
+          <div style="font-size:10px;color:var(--text-light)">${pct}%</div>
+        </div>
+      </div>`;
+    }).join('')
+    : `<div class="stat-modal-empty"><div class="empty-state-icon">👨‍⚕️</div><p>No doctor data yet.</p></div>`;
+    body.innerHTML = buildSummaryRow(
+      { v:sorted.length, l:'Active Doctors' },
+      { v:sorted[0]?sorted[0][1]:0, l:'Top Doctor' },
+      { v:allAppointments.length, l:'Total Appts' }
+    ) + `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px">Doctor Leaderboard · Click to open profile</div>
+    <div class="stat-modal-list">${doctorRows}</div>`;
+  }
+  overlay.classList.add('open');
+}
+
+function buildSummaryRow(...items) {
+  return `<div class="stat-modal-summary">${items.map(({v,l})=>
+    `<div class="stat-modal-mini"><div class="v">${v}</div><div class="l">${l}</div></div>`
+  ).join('')}</div>`;
+}
+
+function buildPatientList(list, label) {
+  if (!list.length) return `<div class="stat-modal-empty"><div class="empty-state-icon">📭</div><p>No records found.</p></div>`;
+  const rows = list.slice(0,15).map((a,i) => {
+    const initials = (a.name||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const avCls = AVATAR_COLORS[i%6];
+    const rec = a.recorded_at ? formatDate(a.recorded_at) : '—';
+    return `<div class="stat-modal-item">
+      <div class="avatar ${avCls}" style="width:34px;height:34px;font-size:11px;font-weight:700;flex-shrink:0">${initials}</div>
+      <div class="stat-modal-item-info">
+        <div class="stat-modal-item-name">${esc(a.name||'Unknown')}</div>
+        <div class="stat-modal-item-sub">${esc(truncate(a.disease||'—',50))} · <strong>${esc(a.doctor||'—')}</strong></div>
+      </div>
+      <div class="stat-modal-item-right">${rec}<br><span style="font-size:10px">${esc(a.preferred_time||'')}</span></div>
+    </div>`;
+  }).join('');
+  const more = list.length>15 ? `<div style="text-align:center;padding:10px;font-size:12px;color:var(--text-muted)">+ ${list.length-15} more</div>` : '';
+  return `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px">${label}</div>
+  <div class="stat-modal-list">${rows}${more}</div>`;
+}
+
+function closeStat()        { document.getElementById('stat-overlay').classList.remove('open'); }
+function closeStatOutside(e){ if(e.target===document.getElementById('stat-overlay')) closeStat(); }
+
+function switchToAppointmentsTab(filter) {
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-appointments').classList.add('active');
+  document.querySelector('.nav-item').classList.add('active');
+  document.getElementById('page-heading').textContent  = 'Appointments';
+  document.getElementById('page-subtitle').textContent = 'All patient bookings from Twilio voice calls';
+  document.getElementById('charts-row').style.display  = 'grid';
+  activeFilter = filter;
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(b=>b.classList.remove('active'));
+  if (filter==='all')   tabBtns[0]?.classList.add('active');
+  if (filter==='today') tabBtns[1]?.classList.add('active');
+  if (filter==='week')  tabBtns[2]?.classList.add('active');
+  currentPage = 1; renderTable();
+}
+
+// ── Export CSV ─────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!allAppointments.length) { showToast('No data to export.','error'); return; }
+  const headers = ['Serial','Patient Name','Disease/Symptoms','Doctor','Preferred Time','Call SID','Recorded At'];
+  const rows = allAppointments.map(a =>
+    [a.serial,a.name,a.disease,a.doctor,a.preferred_time,a.call_sid,a.recorded_at]
+    .map(v=>`"${String(v||'').replace(/"/g,'""')}"`)
+  );
+  const csv  = [headers.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `medicall_appointments_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('📥 CSV exported successfully!', 'success');
+}
+
+// ── Print ──────────────────────────────────────────────────────────────────
+function printTable() {
+  window.print();
+}
+
+// ── Mobile sidebar ─────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const isOpen   = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+// ── Refresh ────────────────────────────────────────────────────────────────
+async function refreshData() {
+  showToast('Refreshing data…');
+  await fetchAppointments();
+  showToast('Data refreshed ✓', 'success');
+}
+
+// ── Toast / Banner ─────────────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function showBanner(msg) {
+  document.getElementById('info-banner-text').textContent = msg;
+  document.getElementById('info-banner').style.display = 'flex';
+}
+
+function hideBanner() {
+  document.getElementById('info-banner').style.display = 'none';
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key==='k') {
+    e.preventDefault();
+    document.getElementById('search-input').focus();
+    document.getElementById('search-input').select();
+  }
+  if (e.key==='Escape') {
+    closeModal(); closeDetail(); closeDoctor(); closeStat();
+  }
+});
+</script>
+</body>
+</html>
