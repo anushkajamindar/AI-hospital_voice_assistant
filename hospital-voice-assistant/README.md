@@ -1,4 +1,4 @@
-# 🏥 Hospital AI Voice Assistant
+#  Hospital AI Voice Assistant
 
 An AI-powered phone receptionist for hospitals.  
 When a patient calls your Twilio number, the AI answers, collects their **name**, **symptoms**, and **preferred appointment time** via natural speech — then saves everything to an Excel sheet automatically.
@@ -9,7 +9,7 @@ Patient calls  →  Twilio  →  ngrok  →  Flask  →  Whisper (OpenAI)  →  
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 hospital-voice-assistant/
@@ -64,7 +64,7 @@ hospital-voice-assistant/
 
 ---
 
-## 🚀 Setup (Step by Step)
+##  Setup (Step by Step)
 
 ### 1. Clone & Install
 
@@ -166,17 +166,17 @@ Click **Save**.
 
 Call your Twilio phone number. The AI will:
 
-1. 🎙️ **Greet** — "Welcome to City Care Hospital…"
-2. 👤 **Ask for name** — records and transcribes with Whisper
-3. 🩺 **Ask for symptoms** — records and transcribes
-4. 📅 **Ask for preferred time** — records and transcribes
-5. ✅ **Confirm & hang up** — saves to Excel
+1.  **Greet** — "Welcome to City Care Hospital…"
+2.  **Ask for name** — records and transcribes with Whisper
+3.  **Ask for symptoms** — records and transcribes
+4.  **Ask for preferred time** — records and transcribes
+5.  **Confirm & hang up** — saves to Excel
 
 Check `data/appointments.xlsx` to see the entry.
 
 ---
 
-## 📊 Excel Output
+##  Excel Output
 
 | # | Patient Name | Disease / Symptoms | Doctor Preference | Preferred Time | Call SID | Recorded At |
 |---|---|---|---|---|---|---|
@@ -184,7 +184,7 @@ Check `data/appointments.xlsx` to see the entry.
 
 ---
 
-## 🔊 How Whisper Works Here
+##  How Whisper Works Here
 
 - Twilio collects the patient's speech via `<Gather input="speech">`
 - The `SpeechResult` field (Twilio's basic transcript) is used as a fallback
@@ -209,7 +209,7 @@ Follow the pattern in `call_handler.py` — each step is a separate route that s
 
 ---
 
-## 🛟 Troubleshooting
+##  Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -221,7 +221,7 @@ Follow the pattern in `call_handler.py` — each step is a separate route that s
 
 ---
 
-## 🔒 Security Notes
+##  Security Notes
 
 - Never commit `.env` to git (it's in `.gitignore`)
 - ngrok free URLs change every restart — update Twilio webhook each time
